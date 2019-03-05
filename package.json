@@ -4,6 +4,7 @@
   "description": "Facebook Messenger Chatbot",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
     "test": "echo 'test ...'"
   },
   "repository": {
