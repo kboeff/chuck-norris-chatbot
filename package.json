@@ -25,6 +25,7 @@
   "homepage": "https://github.com/kboeff/chuck-norris-chatbot#readme",
   "dependencies": {
     "body-parser": "^1.18.3",
-    "express": "^4.16.4"
+    "express": "^4.16.4",
+    "request": "^2.88.0"
   }
 }
