@@ -105,7 +105,7 @@ function handleMessage(sender_psid, time_stamp, received_message) {
   if (received_message.text) {    
     // Create the payload for a basic text message, which
     // will be added to the body of our request to the Send API
-    let userStatus = dbCheck(sender_psid);
+    let userStatus = dbCheck(sender_psid, time_stamp);
     console.log('userStatus', userStatus);
     // Remove punctuation to search for keywords in user message
     let cleanMessage = received_message.text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").toLowerCase().split(' ');
