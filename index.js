@@ -179,6 +179,7 @@ function dbCheck(sender_psid, time_stamp) {
         if (err) {
             throw err = new Error('Cannot connect to PostgreSQL.');
         }
+        console.log(res, res.rows);
         if (res.rows) {
             let { status, stamp, count, heard_a_joke } = JSON.stringify(res.rows);
             let receivedDate = new Date(stamp * 1000);
