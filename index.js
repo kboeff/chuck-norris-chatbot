@@ -175,7 +175,8 @@ function callSendAPI(sender_psid, response) {
 //  1 => waiting time over or reset found, show a joke
 //  2 => hear a joke, could ask for more 
 function dbCheck(sender_psid, time_stamp) {
-    return client.query('SELECT status, starttime, count FROM records WHERE id=$1;', [sender_psid] , (err, res) => {
+    let state;
+    client.query('SELECT status, starttime, count FROM records WHERE id=$1;', [sender_psid] , (err, res) => {
         if (err) {
             throw err = new Error('Cannot connect to PostgreSQL.');
         }
@@ -188,7 +189,7 @@ function dbCheck(sender_psid, time_stamp) {
             console.log(res.rows);
             if (status === -1) {
                 if (timePassed < 24 * 60 * 60 * 1000) {
-                    return -2; // post count over 10, need to wait 24 hours
+                    state = -2; // post count over 10, need to wait 24 hours
                 } else {
                     client.query('UPDATE records SET status = 0, count = 0 WHERE id=$1;', [sender_psid] , (err, res) => {
                         if (err) {
@@ -196,7 +197,7 @@ function dbCheck(sender_psid, time_stamp) {
                         }
                         console.log(res.rows);
                     });
-                    return 1;
+                    state = 1;
                 }
             }
             if (count > 10) {
@@ -206,18 +207,19 @@ function dbCheck(sender_psid, time_stamp) {
                     }
                     console.log(res.rows);
                 });
-                return -1;
+                state = -1;
             }
             if (heard_a_joke) {
-                return 2;
+                state = 2;
             } else {
-                return 1;
+                state = 1;
             }
         } else {
-            return 0;
+            state = 0;
         }
         
     });
+    return state;
 }
 
 // Add new user, start counting
