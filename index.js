@@ -111,6 +111,7 @@ function handleMessage(sender_psid, time_stamp, received_message) {
    
     if (cleanMessage.indexOf('joke') !== -1) {
         if (userStatus >= 0) {
+            console.log('response = joke');
             // New user found, check wether he or she wants a joke
             response = joke;
             if(userStatus === 0) {
@@ -180,7 +181,7 @@ function dbCheck(sender_psid, time_stamp) {
         if (err) {
             throw err = new Error('Cannot connect to PostgreSQL.');
         }
-        console.log(res, res.rows);
+        // console.log(res, res.rows);
         if (res.rows.length > 0) {
             let { status, stamp, count, heard_a_joke } = JSON.stringify(res.rows);
             let receivedDate = new Date(stamp * 1000);
