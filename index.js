@@ -7,6 +7,16 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const app = express().use(bodyParser.json()); // creates express server
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
+const { Client } = require('pg'); // connect to PostgreSQL
+
+// Connect to the database with 3 columns
+// id | status | starttime
+const client = new Client({
+  connectionString: process.env.DATABASE_URL,
+  ssl: true,
+});
+
+client.connect();
 
 // Sets server port and logs message on success
 app.listen(process.env.PORT || 1337, () => console.log('webhook is listening'));
@@ -31,10 +41,13 @@ app.post('/webhook', (req, res) => {
         let sender_psid = webhook_event.sender.id;
         console.log('Sender PSID: ' + sender_psid);
 
+        // Get the Timestamp
+        let time_stamp = webhook_event.timestamp;
+
         // Check if the event is a message or postback and
         // pass the event to the appropriate handler function
         if (webhook_event.message) {
-            handleMessage(sender_psid, webhook_event.message);        
+            handleMessage(sender_psid, time_stamp, webhook_event.message);        
         } else if (webhook_event.postback) {
             handlePostback(sender_psid, webhook_event.postback);
         }
@@ -76,53 +89,69 @@ app.get('/webhook', (req, res) => {
 });
 
 // Handles messages events
-function handleMessage(sender_psid, received_message) {
+function handleMessage(sender_psid, time_stamp, received_message) {
     let response;
+    let joke;
+    let helpMessage = 'Help: ask for a Joke and then you will want some More. Type Reset if you get stuck.';
+    let hint = 'Hint: ask for help to get instructions.';
 
+    // Fetch the joke
+    request({
+        "uri": "http://api.icndb.com/jokes/random/",
+        "method": "GET",
+        "json": request_body
+      }, (err, res, body) => {
+        if (!err) {
+          joke = body.value.joke;
+        } else {
+          console.error("Failed to fetch a joke:" + err);
+        }
+      }); 
+    
+   
     // Checks if the message contains text
   if (received_message.text) {    
     // Create the payload for a basic text message, which
     // will be added to the body of our request to the Send API
+    let userStatus = dbCheck(sender_psid);
+    // Remove punctuation to search for keywords in user message
+   let cleanMessage = received_message.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").toLowerCase().split(' ');
+   
+   if (cleanMessage.indexOf('joke') !== -1) {
+       if (userStatus >= 0) {
+           // New user found, check wether he or she wants a joke
+           response = joke;
+           if(userStatus === 0) {
+               addNewUser(sender_psid, time_stamp);
+           } else {
+               updateUser(sender_psid);
+           }
+       }
+   } else if (cleanMessage.indexOf('more') !== -1) {
+       if (userStatus === 2) {
+           response = joke;
+           updateUser(sender_psid);
+       }
+   } else if (cleanMessage.indexOf('help') !== -1) {
+       response = helpMessage;
+   } else if (cleanMessage.indexOf('reset') !== -1) {
+
+   } else {
+       response = hint;
+   }
+   
+
     response = {
       "text": `You sent the message: "${received_message.text}". Now send me an attachment!`
     }
   } else if (received_message.attachments) {
     // Get the URL of the message attachment
     let attachment_url = received_message.attachments[0].payload.url;
-    response = {
-      "attachment": {
-        "type": "template",
-        "payload": {
-          "template_type": "generic",
-          "elements": [{
-            "title": "Is this the right picture?",
-            "subtitle": "Tap a button to answer.",
-            "image_url": attachment_url,
-            "buttons": [
-              {
-                "type": "postback",
-                "title": "Yes!",
-                "payload": "yes",
-              },
-              {
-                "type": "postback",
-                "title": "No!",
-                "payload": "no",
-              }
-            ],
-          }]
-        }
-      }
-    }
-  } 
-    
+    response = 'Nice picture, do you want to know what Chuck Norris has to say about it?';
+  }
+
     // Sends the response message
     callSendAPI(sender_psid, response); 
-}
-
-// Handles messaging_postbacks events
-function handlePostback(sender_psid, received_postback) {
-
 }
 
 // Sends response messages via the Send API
@@ -148,4 +177,87 @@ function callSendAPI(sender_psid, response) {
       console.error("Unable to send message:" + err);
     }
   }); 
+}
+
+// Check if the user exists in the database and other conditions
+// return values according to different scenarios:
+// -2 => post count over 10, check elapsed time
+// -1 => just reached 10 posts, have to wait 24 hours
+//  0 => user not found, needs to be added
+//  1 => waiting time over or reset found, show a joke
+//  2 => hear a joke, could ask for more 
+function dbCheck(sender_psid, time_stamp) {
+    client.query('SELECT status, starttime, count FROM records WHERE id=$1;', [sender_psid] , (err, res) => {
+        if (err) {
+            throw err;
+        }
+        if (res.rows) {
+            let { status, stamp, count, heard_a_joke } = JSON.stringify(res.rows);
+            let receivedDate = new Date(stamp * 1000);
+            let timePassed = new Date() - receivedDate;
+
+            console.log(res.rows);
+            if (status === -1) {
+                if (timePassed < 24 * 60 * 60 * 1000) {
+                    return -2; // post count over 10, need to wait 24 hours
+                } else {
+                    client.query('UPDATE records SET status = 0, count = 0 WHERE id=$1;', [sender_psid, time_stamp] , (err, res) => {
+                        if (err) {
+                            throw err;
+                        }
+                        console.log(res.rows);
+                    });
+                    return 1;
+                }
+            }
+            if (count > 10) {
+                client.query('UPDATE records SET status = -1, count = 0, starttime = $2 WHERE id=$1;', [sender_psid, time_stamp] , (err, res) => {
+                    if (err) {
+                        throw err;
+                    }
+                    console.log(res.rows);
+                });
+                return -1;
+            }
+            if (heard_a_joke) {
+                return 2;
+            } else {
+                return 1;
+            }
+        } else {
+            return 0;
+        }
+        
+    });
+}
+
+// Add new user, start counting
+function addNewUser(sender_psid, time_stamp) {
+    client.query('INSERT INTO records(id, status, starttime, count, heard_a_joke) VALUES($1, 1, $2, 1, FALSE);', [sender_psid, time_stamp] , (err, res) => {
+        if (err) {
+            throw err;
+        }
+        console.log(JSON.stringify(res.rows));
+    });
+}
+
+// Increment count from 1 to 10
+function updateUser(sender_psid) {
+    client.query('UPDATE records SET count = count + 1, heard_a_joke = TRUE WHERE id=$1;', [sender_psid] , (err, res) => {
+        if (err) {
+            throw err;
+        }
+        console.log(JSON.stringify(res.rows));
+    });
+}
+
+
+// Reset counts and heard_a_joke
+function resetUser(sender_psid) {
+    client.query('UPDATE records SET status = 0, count = 0, heard_a_joke = FALSE WHERE id=$1;', [sender_psid] , (err, res) => {
+        if (err) {
+            throw err;
+        }
+        console.log(JSON.stringify(res.rows));
+    });
 }
