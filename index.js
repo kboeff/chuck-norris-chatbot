@@ -178,7 +178,7 @@ function callSendAPI(sender_psid, response) {
 function dbCheck(sender_psid, time_stamp) {
     client.query('SELECT status, starttime, count FROM records WHERE id=$1;', [sender_psid] , (err, res) => {
         if (err) {
-            throw err;
+            throw err = new Error('Cannot connect to PostgreSQL.');
         }
         if (res.rows) {
             let { status, stamp, count, heard_a_joke } = JSON.stringify(res.rows);
