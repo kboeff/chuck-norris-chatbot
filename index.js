@@ -3,6 +3,7 @@
 // Facebook code below, setting up the webhook for Messenger
 // Imports dependencies and set up http server
 const request = require('request');
+const fetch = require('node-fetch');
 const express = require('express');
 const bodyParser = require('body-parser');
 const app = express().use(bodyParser.json()); // creates express server
@@ -96,12 +97,9 @@ function handleMessage(sender_psid, time_stamp, received_message) {
     let hint = 'Hint: ask for help to get instructions.';
 
     // Fetch the joke
-    request('http://api.icndb.com/jokes/random/', function (error, response, body) {
-        console.log('error:', error); // Print the error if one occurred
-        console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
-        // console.log('body:', body);
-        joke = body["value"]["joke"];
-    });
+    fetch('http://api.icndb.com/jokes/random/')
+        .then(res => res.json())
+        .then(json => { joke = json["value"]["joke"]});
     
     // Checks if the message contains text
   if (received_message.text) {    
