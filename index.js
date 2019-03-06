@@ -225,7 +225,7 @@ function dbCheck(sender_psid, time_stamp) {
 
 // Add new user, start counting
 function addNewUser(sender_psid, time_stamp) {
-    client.query('INSERT INTO records(id, status, starttime, count, heard_a_joke) VALUES($1, 1, to_timestamp($2), 1, FALSE);', [sender_psid, time_stamp] , (err, res) => {
+    client.query('INSERT INTO records(id, status, starttime, count, heard_a_joke) VALUES($1, 1, $2, 1, FALSE);', [sender_psid, time_stamp] , (err, res) => {
         if (err) {
             throw err = new Error('Problem inserting to db.');
         }
@@ -235,7 +235,7 @@ function addNewUser(sender_psid, time_stamp) {
 
 // Increment count from 1 to 10
 function updateUser(sender_psid) {
-    client.connect();
+
     client.query('UPDATE records SET count = count + 1, heard_a_joke = TRUE WHERE id=$1;', [sender_psid] , (err, res) => {
         if (err) {
             throw err;
