@@ -106,19 +106,20 @@ function handleMessage(sender_psid, time_stamp, received_message) {
     // Create the payload for a basic text message, which
     // will be added to the body of our request to the Send API
     let userStatus = dbCheck(sender_psid);
+    console.log('userStatus', userStatus);
     // Remove punctuation to search for keywords in user message
-   let cleanMessage = received_message.text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").toLowerCase().split(' ');
+    let cleanMessage = received_message.text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").toLowerCase().split(' ');
    
-   if (cleanMessage.indexOf('joke') !== -1) {
-       if (userStatus >= 0) {
-           // New user found, check wether he or she wants a joke
-           response = joke;
-           if(userStatus === 0) {
-               addNewUser(sender_psid, time_stamp);
-           } else {
-               updateUser(sender_psid);
-           }
-       }
+    if (cleanMessage.indexOf('joke') !== -1) {
+        if (userStatus >= 0) {
+            // New user found, check wether he or she wants a joke
+            response = joke;
+            if(userStatus === 0) {
+                addNewUser(sender_psid, time_stamp);
+            } else {
+                updateUser(sender_psid);
+            }
+        }
    } else if (cleanMessage.indexOf('more') !== -1) {
        if (userStatus === 2) {
            response = joke;
