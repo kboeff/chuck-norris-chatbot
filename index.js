@@ -224,9 +224,9 @@ function dbCheck(sender_psid, time_stamp) {
 
 // Add new user, start counting
 function addNewUser(sender_psid, time_stamp) {
-    client.query('INSERT INTO records(id, status, starttime, count, heard_a_joke) VALUES($1, 1, $2, 1, FALSE);', [sender_psid, parseInt(time_stamp)] , (err, res) => {
+    client.query('INSERT INTO records(id, status, starttime, count, heard_a_joke) VALUES($1, 1, to_timestamp($2), 1, FALSE);', [sender_psid, time_stamp] , (err, res) => {
         if (err) {
-            throw err;
+            throw err = new Error('Problem inserting to db.');
         }
         console.log(JSON.stringify(res.rows));
     });
