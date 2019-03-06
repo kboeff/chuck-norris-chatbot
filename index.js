@@ -185,7 +185,7 @@ function dbCheck(sender_psid, time_stamp) {
             let receivedDate = new Date(stamp * 1000);
             let timePassed = new Date() - receivedDate;
 
-            console.log(res.rows);
+            console.log(res.rows.length = 0);
             if (status === -1) {
                 if (timePassed < 24 * 60 * 60 * 1000) {
                     return -2; // post count over 10, need to wait 24 hours
