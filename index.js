@@ -175,7 +175,7 @@ function callSendAPI(sender_psid, response) {
 //  1 => waiting time over or reset found, show a joke
 //  2 => hear a joke, could ask for more 
 function dbCheck(sender_psid, time_stamp) {
-    client.query('SELECT status, starttime, count FROM records WHERE id=$1;', [sender_psid] , (err, res) => {
+    return client.query('SELECT status, starttime, count FROM records WHERE id=$1;', [sender_psid] , (err, res) => {
         if (err) {
             throw err = new Error('Cannot connect to PostgreSQL.');
         }
