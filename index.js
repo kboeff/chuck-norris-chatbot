@@ -110,7 +110,7 @@ function handleMessage(sender_psid, time_stamp, received_message) {
     // will be added to the body of our request to the Send API
     let userStatus = dbCheck(sender_psid);
     // Remove punctuation to search for keywords in user message
-   let cleanMessage = received_message.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").toLowerCase().split(' ');
+   let cleanMessage = received_message.text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").toLowerCase().split(' ');
    
    if (cleanMessage.indexOf('joke') !== -1) {
        if (userStatus >= 0) {
@@ -182,7 +182,7 @@ function callSendAPI(sender_psid, response) {
 //  1 => waiting time over or reset found, show a joke
 //  2 => hear a joke, could ask for more 
 function dbCheck(sender_psid, time_stamp) {
-    client.query('SELECT status, starttime, count FROM records WHERE id=$1;', [sender_psid] , (err, res) => {
+    client.query('SELECT status, starttime, count FROM records WHERE id=$1;', [parseInt(sender_psid)] , (err, res) => {
         if (err) {
             throw err;
         }
@@ -196,7 +196,7 @@ function dbCheck(sender_psid, time_stamp) {
                 if (timePassed < 24 * 60 * 60 * 1000) {
                     return -2; // post count over 10, need to wait 24 hours
                 } else {
-                    client.query('UPDATE records SET status = 0, count = 0 WHERE id=$1;', [sender_psid, time_stamp] , (err, res) => {
+                    client.query('UPDATE records SET status = 0, count = 0 WHERE id=$1;', [parseInt(sender_psid)] , (err, res) => {
                         if (err) {
                             throw err;
                         }
@@ -206,7 +206,7 @@ function dbCheck(sender_psid, time_stamp) {
                 }
             }
             if (count > 10) {
-                client.query('UPDATE records SET status = -1, count = 0, starttime = $2 WHERE id=$1;', [sender_psid, time_stamp] , (err, res) => {
+                client.query('UPDATE records SET status = -1, count = 0, starttime = $2 WHERE id=$1;', [parseInt(sender_psid), parseInt(time_stamp)] , (err, res) => {
                     if (err) {
                         throw err;
                     }
@@ -228,7 +228,7 @@ function dbCheck(sender_psid, time_stamp) {
 
 // Add new user, start counting
 function addNewUser(sender_psid, time_stamp) {
-    client.query('INSERT INTO records(id, status, starttime, count, heard_a_joke) VALUES($1, 1, $2, 1, FALSE);', [sender_psid, time_stamp] , (err, res) => {
+    client.query('INSERT INTO records(id, status, starttime, count, heard_a_joke) VALUES($1, 1, $2, 1, FALSE);', [parseInt(sender_psid), parseInt(time_stamp)] , (err, res) => {
         if (err) {
             throw err;
         }
@@ -238,7 +238,7 @@ function addNewUser(sender_psid, time_stamp) {
 
 // Increment count from 1 to 10
 function updateUser(sender_psid) {
-    client.query('UPDATE records SET count = count + 1, heard_a_joke = TRUE WHERE id=$1;', [sender_psid] , (err, res) => {
+    client.query('UPDATE records SET count = count + 1, heard_a_joke = TRUE WHERE id=$1;', [parseInt(sender_psid)] , (err, res) => {
         if (err) {
             throw err;
         }
@@ -249,7 +249,7 @@ function updateUser(sender_psid) {
 
 // Reset counts and heard_a_joke
 function resetUser(sender_psid) {
-    client.query('UPDATE records SET status = 0, count = 0, heard_a_joke = FALSE WHERE id=$1;', [sender_psid] , (err, res) => {
+    client.query('UPDATE records SET status = 0, count = 0, heard_a_joke = FALSE WHERE id=$1;', [parseInt(sender_psid)] , (err, res) => {
         if (err) {
             throw err;
         }
