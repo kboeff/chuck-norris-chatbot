@@ -10,8 +10,7 @@ const app = express().use(bodyParser.json()); // creates express server
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
 const { Client } = require('pg'); // connect to PostgreSQL
 
-// Connect to the database with 3 columns
-// id | status | starttime
+// Connect to the database 
 const client = new Client({
   connectionString: process.env.DATABASE_URL,
   ssl: true,
@@ -128,7 +127,7 @@ function handleMessage(sender_psid, time_stamp, received_message) {
    } else if (cleanMessage.indexOf('help') !== -1) {
        response = helpMessage;
    } else if (cleanMessage.indexOf('reset') !== -1) {
-
+       resetUser(sender_psid);
    } else {
        response = hint;
    }
@@ -232,6 +231,7 @@ function addNewUser(sender_psid, time_stamp) {
 
 // Increment count from 1 to 10
 function updateUser(sender_psid) {
+    client.connect();
     client.query('UPDATE records SET count = count + 1, heard_a_joke = TRUE WHERE id=$1;', [sender_psid] , (err, res) => {
         if (err) {
             throw err;
