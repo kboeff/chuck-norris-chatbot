@@ -96,11 +96,11 @@ function handleMessage(sender_psid, time_stamp, received_message) {
     let hint = 'Hint: ask for help to get instructions.';
 
     // Fetch the joke
-    request('http://api.icndb.com/jokes/random/', function (error, response, body) {
+    joke = request('http://api.icndb.com/jokes/random/', function (error, response, body) {
         console.log('error:', error); // Print the error if one occurred
         console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
         console.log('body:', body);
-        joke = body.value.joke;
+        return body.value.joke;
     });
     
    
