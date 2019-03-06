@@ -180,12 +180,12 @@ function dbCheck(sender_psid, time_stamp) {
             throw err = new Error('Cannot connect to PostgreSQL.');
         }
         console.log(res, res.rows);
-        if (res.rows) {
+        if (res.rows.length > 0) {
             let { status, stamp, count, heard_a_joke } = JSON.stringify(res.rows);
             let receivedDate = new Date(stamp * 1000);
             let timePassed = new Date() - receivedDate;
 
-            console.log(res.rows.length = 0);
+            console.log(res.rows);
             if (status === -1) {
                 if (timePassed < 24 * 60 * 60 * 1000) {
                     return -2; // post count over 10, need to wait 24 hours
