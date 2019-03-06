@@ -187,7 +187,7 @@ function dbCheck(sender_psid, time_stamp) {
             let receivedDate = new Date(stamp * 1000);
             let timePassed = new Date() - receivedDate;
 
-            console.log(res.rows);
+            // console.log(res.rows);
             if (status === -1) {
                 if (timePassed < 24 * 60 * 60 * 1000) {
                     state = -2; // post count over 10, need to wait 24 hours
@@ -225,7 +225,7 @@ function dbCheck(sender_psid, time_stamp) {
 
 // Add new user, start counting
 function addNewUser(sender_psid, time_stamp) {
-    client.query('INSERT INTO records(id, status, starttime, count, heard_a_joke) VALUES($1, 1, $2, 1, FALSE);', [sender_psid, time_stamp] , (err, res) => {
+    client.query('INSERT INTO records (id, status, starttime, count, heard_a_joke) VALUES ($1, 1, $2, 1, FALSE);', [sender_psid, time_stamp] , (err, res) => {
         if (err) {
             throw err = new Error('Problem inserting to db.');
         }
