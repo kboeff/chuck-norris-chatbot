@@ -231,6 +231,7 @@ function addNewUser(sender_psid, time_stamp) {
             throw err = new Error('Problem inserting to db.');
         }
         console.log(JSON.stringify(res.rows));
+        client.end();
     });
 }
 
