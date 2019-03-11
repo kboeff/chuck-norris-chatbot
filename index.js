@@ -89,12 +89,21 @@ app.get('/webhook', (req, res) => {
     }
 });
 
+function getJoke () {
+    return fetch('https://api.icndb.com/jokes/random/')
+                .then(res => res.json())
+                .then(json => json["value"]["joke"])
+                .catch(err => console.log(err));
+}
+
+
 // Handles messages events
-function handleMessage(sender_psid, time_stamp, received_message) {
+async function handleMessage(sender_psid, time_stamp, received_message) {
     let response;
     let joke;
     let helpMessage = 'Help: ask for a Joke and then you will want some More. Type Reset if you get stuck.';
     let hint = 'Hint: ask for help to get instructions.';
+    
 
  // Checks if the message contains text
   if (received_message.text) {    
@@ -107,12 +116,11 @@ function handleMessage(sender_psid, time_stamp, received_message) {
     if (cleanMessage.indexOf('joke') !== -1) {
         if (userStatus >= 0) {
             console.log('response = joke');
-            // New user found, check wether he or she wants a joke
-             // Fetch the joke
-        fetch('https://api.icndb.com/jokes/random/')
-            .then(res => res.json())
-            .then(json => { response = json["value"]["joke"]})
-            .finally(console.log(response));
+            
+            await getJoke().then(data => { joke = data });
+            response = joke;
+            
+            // New user found, check wether he or she wants a joke    
             if(userStatus === 0) {
                 addNewUser(sender_psid, time_stamp);
             } else {
@@ -121,11 +129,9 @@ function handleMessage(sender_psid, time_stamp, received_message) {
         }
    } else if (cleanMessage.indexOf('more') !== -1) {
        if (userStatus === 2) {
-          fetch('https://api.icndb.com/jokes/random/')
-            .then(res => res.json())
-            .then(json => { response = json["value"]["joke"]})
-            .finally(console.log(response));
-           updateUser(sender_psid);
+          await getJoke().then(data => { joke = data });
+          response = joke;
+          updateUser(sender_psid);
        }
    } else if (cleanMessage.indexOf('help') !== -1) {
        response = helpMessage;
