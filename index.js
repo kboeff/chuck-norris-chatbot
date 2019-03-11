@@ -146,6 +146,7 @@ function handleMessage(sender_psid, time_stamp, received_message) {
 
 // Sends response messages via the Send API
 function callSendAPI(sender_psid, response) {
+    console.log('callSendAPI reched with this response: ', response);
   // Construct the message body
   let request_body = {
     "recipient": {
@@ -162,7 +163,7 @@ function callSendAPI(sender_psid, response) {
     "json": request_body
   }, (err, res, body) => {
     if (!err) {
-      console.log(res, body, 'message sent!');
+      console.log(response, 'message sent!');
     } else {
       console.error("Unable to send message:" + err);
     }
