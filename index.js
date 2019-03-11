@@ -121,6 +121,7 @@ async function handleMessage(sender_psid, time_stamp, received_message) {
             response = joke;
             
             // New user found, check wether he or she wants a joke    
+            /*
             try {
                 if(userStatus === 0) {
                     addNewUser(sender_psid, time_stamp);
@@ -130,6 +131,7 @@ async function handleMessage(sender_psid, time_stamp, received_message) {
             } catch (error) {
                 console.log('Adding new user failed ', error);
             }
+            */
         }
    } else if (cleanMessage.indexOf('more') !== -1) {
        if (userStatus === 2) {
