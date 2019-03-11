@@ -96,16 +96,9 @@ function handleMessage(sender_psid, time_stamp, received_message) {
     let helpMessage = 'Help: ask for a Joke and then you will want some More. Type Reset if you get stuck.';
     let hint = 'Hint: ask for help to get instructions.';
 
-    // Fetch the joke
-    fetch('https://api.icndb.com/jokes/random/')
-        .then(res => res.json())
-        .then(json => { joke = json["value"]["joke"]})
-        .finally(console.log(joke));
-    
-    // Checks if the message contains text
+ // Checks if the message contains text
   if (received_message.text) {    
-    // Create the payload for a basic text message, which
-    // will be added to the body of our request to the Send API
+    
     let userStatus = dbCheck(sender_psid, time_stamp);
     console.log('userStatus', userStatus);
     // Remove punctuation to search for keywords in user message
@@ -115,7 +108,11 @@ function handleMessage(sender_psid, time_stamp, received_message) {
         if (userStatus >= 0) {
             console.log('response = joke');
             // New user found, check wether he or she wants a joke
-            response = joke;
+             // Fetch the joke
+        fetch('https://api.icndb.com/jokes/random/')
+            .then(res => res.json())
+            .then(json => { response = json["value"]["joke"]})
+            .finally(console.log(response));
             if(userStatus === 0) {
                 addNewUser(sender_psid, time_stamp);
             } else {
@@ -124,7 +121,10 @@ function handleMessage(sender_psid, time_stamp, received_message) {
         }
    } else if (cleanMessage.indexOf('more') !== -1) {
        if (userStatus === 2) {
-           response = joke;
+          fetch('https://api.icndb.com/jokes/random/')
+            .then(res => res.json())
+            .then(json => { response = json["value"]["joke"]})
+            .finally(console.log(response));
            updateUser(sender_psid);
        }
    } else if (cleanMessage.indexOf('help') !== -1) {
