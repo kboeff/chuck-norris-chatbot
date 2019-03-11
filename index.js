@@ -46,10 +46,11 @@ app.post('/webhook', (req, res) => {
 
         // Check if the event is a message or postback and
         // pass the event to the appropriate handler function
+        // NOTE: NOT USING POSTBACKS CURRENTLY
         if (webhook_event.message) {
             handleMessage(sender_psid, time_stamp, webhook_event.message);        
         } else if (webhook_event.postback) {
-            handlePostback(sender_psid, webhook_event.postback);
+            console.log(webhook_event.postback.payload);
         }
 
       });
@@ -151,7 +152,7 @@ function callSendAPI(sender_psid, response) {
       "id": sender_psid
     },
     "message": response
-  }
+  };
 
   // Send the HTTP request to the Messenger Platform
   request({
@@ -161,7 +162,7 @@ function callSendAPI(sender_psid, response) {
     "json": request_body
   }, (err, res, body) => {
     if (!err) {
-      console.log('message sent!')
+      console.log(body, 'message sent!');
     } else {
       console.error("Unable to send message:" + err);
     }
@@ -202,7 +203,7 @@ function dbCheck(sender_psid, time_stamp) {
                 }
             }
             if (count > 10) {
-                client.query('UPDATE records SET status = -1, count = 0, starttime = $2 WHERE id=$1;', [sender_psid, parseInt(time_stamp)] , (err, res) => {
+                client.query('UPDATE records SET status = -1, count = 0, starttime = $2 WHERE id=$1;', [sender_psid, time_stamp] , (err, res) => {
                     if (err) {
                         throw err;
                     }
