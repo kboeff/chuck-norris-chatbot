@@ -97,9 +97,10 @@ function handleMessage(sender_psid, time_stamp, received_message) {
     let hint = 'Hint: ask for help to get instructions.';
 
     // Fetch the joke
-    fetch('http://api.icndb.com/jokes/random/')
+    fetch('https://api.icndb.com/jokes/random/')
         .then(res => res.json())
-        .then(json => { joke = json["value"]["joke"]});
+        .then(json => { joke = json["value"]["joke"]})
+        .finally(console.log(joke));
     
     // Checks if the message contains text
   if (received_message.text) {    
