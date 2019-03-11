@@ -178,7 +178,7 @@ function callSendAPI(sender_psid, response) {
 //  2 => hear a joke, could ask for more 
 function dbCheck(sender_psid, time_stamp) {
     let state = 0;
-    client.query('SELECT status, starttime, count FROM records WHERE id=$1;', [sender_psid] , (err, res) => {
+    client.query('SELECT status, starttime, count, heard_a_joke FROM records WHERE id=$1;', [sender_psid] , (err, res) => {
         if (err) {
             throw err = new Error('Cannot connect to PostgreSQL.');
         }
@@ -195,7 +195,7 @@ function dbCheck(sender_psid, time_stamp) {
                 } else {
                     client.query('UPDATE records SET status = 0, count = 0 WHERE id=$1;', [sender_psid] , (err, res) => {
                         if (err) {
-                            throw err;
+                            throw err = new Error('Cannot UPDATE records');
                         }
                         console.log(res.rows);
                     });
@@ -205,7 +205,7 @@ function dbCheck(sender_psid, time_stamp) {
             if (count > 10) {
                 client.query('UPDATE records SET status = -1, count = 0, starttime = $2 WHERE id=$1;', [sender_psid, time_stamp] , (err, res) => {
                     if (err) {
-                        throw err;
+                        throw err = new Error('Cannot UPDATE records..');
                     }
                     console.log(res.rows);
                 });
@@ -226,7 +226,7 @@ function dbCheck(sender_psid, time_stamp) {
 
 // Add new user, start counting
 function addNewUser(sender_psid, time_stamp) {
-    client.query('INSERT INTO records (id, status, starttime, count, heard_a_joke) VALUES ($1, 1, $2, 1, FALSE);', [sender_psid, time_stamp] , (err, res) => {
+    client.query('INSERT INTO records (id, status, starttime, count, heard_a_joke) VALUES ($1, 1, to_timestamp($2), 1, FALSE);', [sender_psid, Date(time_stamp)/1000] , (err, res) => {
         if (err) {
             throw err = new Error('Problem inserting to db.');
         }
