@@ -101,8 +101,8 @@ function getJoke () {
 async function handleMessage(sender_psid, time_stamp, received_message) {
     let response;
     let joke;
-    let helpMessage = 'Help: ask for a Joke and then you will want some More. Type Reset if you get stuck.';
-    let hint = 'Hint: ask for help to get instructions.';
+    let helpMessage = 'Help: ask for a "joke" and then you will want some "more".';
+    let hint = 'Hint: you could ask for help to get instructions.';
     
 
  // Checks if the message contains text
@@ -134,11 +134,12 @@ async function handleMessage(sender_psid, time_stamp, received_message) {
             */
         }
    } else if (cleanMessage.indexOf('more') !== -1) {
-       if (userStatus === 2) {
+       // if (userStatus === 2) {
           await getJoke().then(data => { joke = data });
           response = joke;
-          updateUser(sender_psid);
-       }
+         
+        //  updateUser(sender_psid);
+       //}
    } else if (cleanMessage.indexOf('help') !== -1) {
        response = helpMessage;
    } else if (cleanMessage.indexOf('reset') !== -1) {
