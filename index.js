@@ -134,9 +134,9 @@ function handleMessage(sender_psid, time_stamp, received_message) {
        response = hint;
    }
 
-  } else if (received_message.attachments) {
+  } else if (received_message.attachments.length) {
     // Get the URL of the message attachment
-    let attachment_url = received_message.attachments[0].payload.url;
+    // let attachment_url = received_message.attachments[0].payload.url;
     response = 'Nice picture, do you want to know what Chuck Norris has to say about it?';
   }
 
