@@ -237,6 +237,8 @@ function dbCheck(sender_psid, time_stamp) {
                 state = 1;
             }
         } else {
+            
+            console.log('Query success, but returns 0 result, or it is not recognized.');
             state = 0;
         }
         
