@@ -111,7 +111,7 @@ async function handleMessage(sender_psid, time_stamp, received_message) {
     let userStatus = dbCheck(sender_psid, time_stamp);
     console.log('userStatus', userStatus);
     // Remove punctuation to search for keywords in user message
-    let cleanMessage = received_message.text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").toLowerCase().split(' ');
+    let cleanMessage = received_message.text.replace(/[.,\/#!$%\^&\*;:{}=\?\-_`~()]/g,"").toLowerCase().split(' ');
    
     if (cleanMessage.indexOf('joke') !== -1) {
         if (userStatus >= 0) {
@@ -121,7 +121,7 @@ async function handleMessage(sender_psid, time_stamp, received_message) {
             response = joke;
             
             // New user found, check wether he or she wants a joke    
-            /*
+            
             try {
                 if(userStatus === 0) {
                     addNewUser(sender_psid, time_stamp);
@@ -131,7 +131,7 @@ async function handleMessage(sender_psid, time_stamp, received_message) {
             } catch (error) {
                 console.log('Adding new user failed ', error);
             }
-            */
+            
         }
    } else if (cleanMessage.indexOf('more') !== -1) {
        // if (userStatus === 2) {
@@ -195,9 +195,11 @@ function callSendAPI(sender_psid, response) {
 //  1 => waiting time over or reset found, show a joke
 //  2 => hear a joke, could ask for more 
 function dbCheck(sender_psid, time_stamp) {
+    client.connect();
     let state = 0;
     client.query('SELECT status, starttime, count, heard_a_joke FROM records WHERE id=$1;', [sender_psid] , (err, res) => {
         if (err) {
+            client.end();
             throw err = new Error('Cannot connect to PostgreSQL.');
         }
         // console.log(res, res.rows);
@@ -213,23 +215,23 @@ function dbCheck(sender_psid, time_stamp) {
                 } else {
                     client.query('UPDATE records SET status = 0, count = 0 WHERE id=$1;', [sender_psid] , (err, res) => {
                         if (err) {
+                            client.end();
                             throw err = new Error('Cannot UPDATE records');
                         }
                         console.log(res.rows);
                     });
                     state = 1;
                 }
-            }
-            if (count > 10) {
+            } else if (count > 10) {
                 client.query('UPDATE records SET status = -1, count = 0, starttime = $2 WHERE id=$1;', [sender_psid, time_stamp] , (err, res) => {
                     if (err) {
+                        client.end();
                         throw err = new Error('Cannot UPDATE records..');
                     }
                     console.log(res.rows);
                 });
                 state = -1;
-            }
-            if (heard_a_joke) {
+            } else if (heard_a_joke) {
                 state = 2;
             } else {
                 state = 1;
@@ -239,38 +241,43 @@ function dbCheck(sender_psid, time_stamp) {
         }
         
     });
+    client.end();
     return state;
 }
 
 // Add new user, start counting
 function addNewUser(sender_psid, time_stamp) {
+    client.connect();
     client.query('INSERT INTO records (id, status, starttime, count, heard_a_joke) VALUES ($1, 1, to_timestamp($2), 1, FALSE);', [parseInt(sender_psid), Date(time_stamp)/1000] , (err, res) => {
         if (err) {
             throw err = new Error('Problem inserting to db.');
         }
         console.log(JSON.stringify(res.rows));
-        client.end();
     });
+    client.end();
 }
 
 // Increment count from 1 to 10
 function updateUser(sender_psid) {
-
+    client.connect();
     client.query('UPDATE records SET count = count + 1, heard_a_joke = TRUE WHERE id=$1;', [sender_psid] , (err, res) => {
         if (err) {
             throw err;
         }
         console.log(JSON.stringify(res.rows));
     });
+    client.end();
 }
 
 
 // Reset counts and heard_a_joke
 function resetUser(sender_psid) {
+    client.connect();
     client.query('UPDATE records SET status = 0, count = 0, heard_a_joke = FALSE WHERE id=$1;', [sender_psid] , (err, res) => {
         if (err) {
             throw err;
         }
         console.log(JSON.stringify(res.rows));
     });
+    client.end();
 }
