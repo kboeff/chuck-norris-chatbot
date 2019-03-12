@@ -226,7 +226,7 @@ function dbCheck(sender_psid, time_stamp) {
                     state = 1;
                 }
             } else if (count > 10) {
-                client.query('UPDATE records SET status = -1, count = 0, starttime = $2 WHERE id=$1;', [sender_psid, Date(time_stamp)/1000] , (err, res) => {
+                client.query('UPDATE records SET status = -1, count = 0, starttime = $2 WHERE id=$1;', [sender_psid, parseInt(time_stamp)/1000] , (err, res) => {
                     if (err) {
                         throw err = new Error('Cannot UPDATE records..');
                     }
@@ -250,9 +250,9 @@ function dbCheck(sender_psid, time_stamp) {
 // Add new user, start counting
 function addNewUser(sender_psid, time_stamp) {
    
-    client.query('INSERT INTO records (id, status, starttime, count, heard_a_joke) VALUES ($1, 1, to_timestamp($2), 1, FALSE);', [sender_psid, Date(time_stamp)/1000] , (err, res) => {
+    client.query('INSERT INTO records (id, status, starttime, count, heard_a_joke) VALUES ($1, 1, to_timestamp($2), 1, FALSE);', [sender_psid, parseInt(time_stamp)/1000] , (err, res) => {
         if (err) {
-           // throw err = new Error('Problem inserting to db.');
+           throw err = new Error('Problem inserting to db.');
         }
         console.log(JSON.stringify(res.rows));
     });
