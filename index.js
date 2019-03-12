@@ -123,16 +123,11 @@ async function handleMessage(sender_psid, time_stamp, received_message) {
             
             // New user found, check wether he or she wants a joke    
             
-            try {
-                if(userStatus === 0) {
-                    addNewUser(sender_psid, time_stamp);
-                } else {
-                    updateUser(sender_psid);
-                }
-            } catch (error) {
-                console.log('Adding new user failed ', error);
+            if (userStatus === 0) {
+                addNewUser(sender_psid, time_stamp);
+            } else {
+                updateUser(sender_psid);
             }
-            
         }
    } else if (cleanMessage.indexOf('more') !== -1) {
        if (userStatus === 2) {
@@ -207,8 +202,8 @@ function dbCheck(sender_psid, time_stamp) {
         if (err) {
             throw err = new Error('Cannot connect to PostgreSQL.');
         }
-        console.log(res, res.rows);
-        if (res.rows.length > 0) {
+        console.log(res.rows);
+        if (res.rows) {
             let { status, stamp, count, heard_a_joke } = JSON.stringify(res.rows);
             let receivedDate = new Date(stamp * 1000);
             let timePassed = new Date() - receivedDate;
@@ -251,7 +246,7 @@ function dbCheck(sender_psid, time_stamp) {
 // Add new user, start counting
 function addNewUser(sender_psid, time_stamp) {
    
-    client.query('INSERT INTO records (id, status, starttime, count, heard_a_joke) VALUES ($1, 1, to_timestamp($2), 1, FALSE);', [sender_psid, parseInt(time_stamp)/1000] , (err, res) => {
+    client.query('INSERT INTO records (id, status, starttime, count, heard_a_joke) VALUES ($1, 1, to_timestamp($2), 1, TRUE);', [sender_psid, parseInt(time_stamp)/1000] , (err, res) => {
         if (err) {
            throw err = new Error('Problem inserting to db.');
         }
