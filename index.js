@@ -200,7 +200,7 @@ function dbCheck(sender_psid, time_stamp) {
     client.query('SELECT status, starttime, count, heard_a_joke FROM records WHERE id=$1;', [parseInt(sender_psid)] , (err, res) => {
         if (err) {
             client.end();
-            throw err = new Error('Cannot connect to PostgreSQL.');
+            //throw err = new Error('Cannot connect to PostgreSQL.');
         }
         console.log(res, res.rows);
         if (res.rows.length > 0) {
@@ -216,7 +216,7 @@ function dbCheck(sender_psid, time_stamp) {
                     client.query('UPDATE records SET status = 0, count = 0 WHERE id=$1;', [parseInt(sender_psid)] , (err, res) => {
                         if (err) {
                             client.end();
-                            throw err = new Error('Cannot UPDATE records');
+                            //throw err = new Error('Cannot UPDATE records');
                         }
                         console.log(res.rows);
                     });
@@ -226,7 +226,7 @@ function dbCheck(sender_psid, time_stamp) {
                 client.query('UPDATE records SET status = -1, count = 0, starttime = $2 WHERE id=$1;', [parseInt(sender_psid), Date(time_stamp)/1000] , (err, res) => {
                     if (err) {
                         client.end();
-                        throw err = new Error('Cannot UPDATE records..');
+                        //throw err = new Error('Cannot UPDATE records..');
                     }
                     console.log(res.rows);
                 });
@@ -250,7 +250,7 @@ function addNewUser(sender_psid, time_stamp) {
     client.connect();
     client.query('INSERT INTO records (id, status, starttime, count, heard_a_joke) VALUES ($1, 1, to_timestamp($2), 1, FALSE);', [parseInt(sender_psid), Date(time_stamp)/1000] , (err, res) => {
         if (err) {
-            throw err = new Error('Problem inserting to db.');
+           // throw err = new Error('Problem inserting to db.');
         }
         console.log(JSON.stringify(res.rows));
     });
@@ -262,7 +262,7 @@ function updateUser(sender_psid) {
     client.connect();
     client.query('UPDATE records SET count = count + 1, heard_a_joke = TRUE WHERE id=$1;', [parseInt(sender_psid)] , (err, res) => {
         if (err) {
-            throw err = new Error('Problem updating user info in db.');
+            // throw err = new Error('Problem updating user info in db.');
         }
         console.log(JSON.stringify(res.rows));
     });
