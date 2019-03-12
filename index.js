@@ -194,13 +194,17 @@ function callSendAPI(sender_psid, response) {
 //  0 => user not found, needs to be added
 //  1 => waiting time over or reset found, show a joke
 //  2 => hear a joke, could ask for more 
+
+// DB table 'records'
+// id  | status | starttime | count | heard_a_joke 
+//-----+-------+-----------+-------+--------------
+// TXT |  INT   |   TIME    | INT   |    BOOL
+
 function dbCheck(sender_psid, time_stamp) {
-    client.connect();
     let state = 0;
-    client.query('SELECT status, starttime, count, heard_a_joke FROM records WHERE id=$1;', [parseInt(sender_psid)] , (err, res) => {
+    client.query('SELECT status, starttime, count, heard_a_joke FROM records WHERE id=$1;', [sender_psid] , (err, res) => {
         if (err) {
-            client.end();
-            //throw err = new Error('Cannot connect to PostgreSQL.');
+            throw err = new Error('Cannot connect to PostgreSQL.');
         }
         console.log(res, res.rows);
         if (res.rows.length > 0) {
@@ -213,20 +217,18 @@ function dbCheck(sender_psid, time_stamp) {
                 if (timePassed < 24 * 60 * 60 * 1000) {
                     state = -2; // post count over 10, need to wait 24 hours
                 } else {
-                    client.query('UPDATE records SET status = 0, count = 0 WHERE id=$1;', [parseInt(sender_psid)] , (err, res) => {
+                    client.query('UPDATE records SET status = 0, count = 0 WHERE id=$1;', [sender_psid] , (err, res) => {
                         if (err) {
-                            client.end();
-                            //throw err = new Error('Cannot UPDATE records');
+                            throw err = new Error('Cannot UPDATE records');
                         }
                         console.log(res.rows);
                     });
                     state = 1;
                 }
             } else if (count > 10) {
-                client.query('UPDATE records SET status = -1, count = 0, starttime = $2 WHERE id=$1;', [parseInt(sender_psid), Date(time_stamp)/1000] , (err, res) => {
+                client.query('UPDATE records SET status = -1, count = 0, starttime = $2 WHERE id=$1;', [sender_psid, Date(time_stamp)/1000] , (err, res) => {
                     if (err) {
-                        client.end();
-                        //throw err = new Error('Cannot UPDATE records..');
+                        throw err = new Error('Cannot UPDATE records..');
                     }
                     console.log(res.rows);
                 });
@@ -241,43 +243,42 @@ function dbCheck(sender_psid, time_stamp) {
         }
         
     });
-    client.end();
+ 
     return state;
 }
 
 // Add new user, start counting
 function addNewUser(sender_psid, time_stamp) {
-    client.connect();
-    client.query('INSERT INTO records (id, status, starttime, count, heard_a_joke) VALUES ($1, 1, to_timestamp($2), 1, FALSE);', [parseInt(sender_psid), Date(time_stamp)/1000] , (err, res) => {
+   
+    client.query('INSERT INTO records (id, status, starttime, count, heard_a_joke) VALUES ($1, 1, to_timestamp($2), 1, FALSE);', [sender_psid, Date(time_stamp)/1000] , (err, res) => {
         if (err) {
            // throw err = new Error('Problem inserting to db.');
         }
         console.log(JSON.stringify(res.rows));
     });
-    client.end();
 }
 
 // Increment count from 1 to 10
 function updateUser(sender_psid) {
-    client.connect();
-    client.query('UPDATE records SET count = count + 1, heard_a_joke = TRUE WHERE id=$1;', [parseInt(sender_psid)] , (err, res) => {
+
+    client.query('UPDATE records SET count = count + 1, heard_a_joke = TRUE WHERE id=$1;', [sender_psid] , (err, res) => {
         if (err) {
             // throw err = new Error('Problem updating user info in db.');
         }
         console.log(JSON.stringify(res.rows));
     });
-    client.end();
+
 }
 
 
 // Reset counts and heard_a_joke
 function resetUser(sender_psid) {
-    client.connect();
-    client.query('UPDATE records SET status = 0, count = 0, heard_a_joke = FALSE WHERE id=$1;', [parseInt(sender_psid)] , (err, res) => {
+
+    client.query('UPDATE records SET status = 0, count = 0, heard_a_joke = FALSE WHERE id=$1;', [sender_psid] , (err, res) => {
         if (err) {
             throw err = new Error('Problem reseting user in db.');
         }
         console.log(JSON.stringify(res.rows));
     });
-    client.end();
+
 }
