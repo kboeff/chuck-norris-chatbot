@@ -198,12 +198,14 @@ function callSendAPI(sender_psid, response) {
 
 function dbCheck(sender_psid, time_stamp) {
     let state = 0;
+    
     client.query('SELECT status, starttime, count, heard_a_joke FROM records WHERE id=$1;', [sender_psid] , (err, res) => {
         if (err) {
             throw err = new Error('Cannot connect to PostgreSQL.');
         }
+        
         console.log(res.rows);
-        if (res.rows) {
+        if (res.rows.length) {
             let { status, stamp, count, heard_a_joke } = JSON.stringify(res.rows);
             let receivedDate = new Date(stamp * 1000);
             let timePassed = new Date() - receivedDate;
