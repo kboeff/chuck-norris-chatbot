@@ -102,18 +102,19 @@ async function handleMessage(sender_psid, time_stamp, received_message) {
     let response;
     let joke;
     let helpMessage = 'Help: ask for a "joke" and then you will want some "more".';
-    let hint = 'Hint: you could ask for help to get instructions.';
+    let hint = 'Hint: type "help" to get instructions.';
     
 
- // Checks if the message contains text
+  // Checks if the message contains text
   if (received_message.text) {    
     
     let userStatus = dbCheck(sender_psid, time_stamp);
     console.log('userStatus', userStatus);
+    
     // Remove punctuation to search for keywords in user message
     let cleanMessage = received_message.text.replace(/[.,\/#!$%\^&\*;:{}=\?\-_`~()]/g,"").toLowerCase().split(' ');
    
-    if (cleanMessage.indexOf('joke') !== -1) {
+    if (cleanMessage.indexOf('joke') !== -1 || cleanMessage.indexOf('jokes')) {
         if (userStatus >= 0) {
             console.log('response = joke');
             
@@ -134,12 +135,12 @@ async function handleMessage(sender_psid, time_stamp, received_message) {
             
         }
    } else if (cleanMessage.indexOf('more') !== -1) {
-       // if (userStatus === 2) {
+       if (userStatus === 2) {
           await getJoke().then(data => { joke = data });
           response = joke;
          
-        //  updateUser(sender_psid);
-       //}
+          updateUser(sender_psid);
+       }
    } else if (cleanMessage.indexOf('help') !== -1) {
        response = helpMessage;
    } else if (cleanMessage.indexOf('reset') !== -1) {
