@@ -197,12 +197,12 @@ function callSendAPI(sender_psid, response) {
 function dbCheck(sender_psid, time_stamp) {
     client.connect();
     let state = 0;
-    client.query('SELECT status, starttime, count, heard_a_joke FROM records WHERE id=$1;', [sender_psid] , (err, res) => {
+    client.query('SELECT status, starttime, count, heard_a_joke FROM records WHERE id=$1;', [parseInt(sender_psid)] , (err, res) => {
         if (err) {
             client.end();
             throw err = new Error('Cannot connect to PostgreSQL.');
         }
-        // console.log(res, res.rows);
+        console.log(res, res.rows);
         if (res.rows.length > 0) {
             let { status, stamp, count, heard_a_joke } = JSON.stringify(res.rows);
             let receivedDate = new Date(stamp * 1000);
@@ -213,7 +213,7 @@ function dbCheck(sender_psid, time_stamp) {
                 if (timePassed < 24 * 60 * 60 * 1000) {
                     state = -2; // post count over 10, need to wait 24 hours
                 } else {
-                    client.query('UPDATE records SET status = 0, count = 0 WHERE id=$1;', [sender_psid] , (err, res) => {
+                    client.query('UPDATE records SET status = 0, count = 0 WHERE id=$1;', [parseInt(sender_psid)] , (err, res) => {
                         if (err) {
                             client.end();
                             throw err = new Error('Cannot UPDATE records');
@@ -223,7 +223,7 @@ function dbCheck(sender_psid, time_stamp) {
                     state = 1;
                 }
             } else if (count > 10) {
-                client.query('UPDATE records SET status = -1, count = 0, starttime = $2 WHERE id=$1;', [sender_psid, time_stamp] , (err, res) => {
+                client.query('UPDATE records SET status = -1, count = 0, starttime = $2 WHERE id=$1;', [parseInt(sender_psid), Date(time_stamp)/1000] , (err, res) => {
                     if (err) {
                         client.end();
                         throw err = new Error('Cannot UPDATE records..');
@@ -260,9 +260,9 @@ function addNewUser(sender_psid, time_stamp) {
 // Increment count from 1 to 10
 function updateUser(sender_psid) {
     client.connect();
-    client.query('UPDATE records SET count = count + 1, heard_a_joke = TRUE WHERE id=$1;', [sender_psid] , (err, res) => {
+    client.query('UPDATE records SET count = count + 1, heard_a_joke = TRUE WHERE id=$1;', [parseInt(sender_psid)] , (err, res) => {
         if (err) {
-            throw err;
+            throw err = new Error('Problem updating user info in db.');
         }
         console.log(JSON.stringify(res.rows));
     });
@@ -273,9 +273,9 @@ function updateUser(sender_psid) {
 // Reset counts and heard_a_joke
 function resetUser(sender_psid) {
     client.connect();
-    client.query('UPDATE records SET status = 0, count = 0, heard_a_joke = FALSE WHERE id=$1;', [sender_psid] , (err, res) => {
+    client.query('UPDATE records SET status = 0, count = 0, heard_a_joke = FALSE WHERE id=$1;', [parseInt(sender_psid)] , (err, res) => {
         if (err) {
-            throw err;
+            throw err = new Error('Problem reseting user in db.');
         }
         console.log(JSON.stringify(res.rows));
     });
