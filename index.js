@@ -208,6 +208,7 @@ function dbCheck(sender_psid, time_stamp) {
         console.log('selected rows: ', res.rows);
         if (res.rows.length) {
             let { status, stamp, count, heard_a_joke } = JSON.stringify(res.rows);
+            console.log("deconstructed rows: ", status, stamp, count, heard_a_joke);
             let receivedDate = new Date(stamp * 1000);
             let timePassed = new Date() - receivedDate;
 
