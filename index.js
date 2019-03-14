@@ -200,10 +200,6 @@ function dbCheck(sender_psid, time_stamp) {
     let rows;
     client.query('SELECT status, starttime, count, heard_a_joke FROM records WHERE id=$1;', [sender_psid])
     .then(res => {
-        if (err) {
-            throw err = new Error('Failed to SELECT from records');
-        }
-        
         rows = res.rows;  
     
         console.log('selected rows: ', rows);
