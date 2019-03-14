@@ -198,7 +198,7 @@ function callSendAPI(sender_psid, response) {
 function dbCheck(sender_psid, time_stamp) {
     let state = 0;
     let rows;
-    client.query('SELECT status, starttime, count, heard_a_joke FROM records WHERE id=$1;', [sender_psid])
+    return client.query('SELECT status, starttime, count, heard_a_joke FROM records WHERE id=$1;', [sender_psid])
     .then(res => {
         rows = res.rows;  
     
@@ -242,7 +242,8 @@ function dbCheck(sender_psid, time_stamp) {
             state = 0;
         }
         return state;
-    }).catch(err => console.log('Error selecting from db.', err));
+    })//.then(state => state)
+    .catch(err => console.log('Error selecting from db.', err));
 }
 
 // Add new user, start counting
