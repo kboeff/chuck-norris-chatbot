@@ -198,7 +198,8 @@ function callSendAPI(sender_psid, response) {
 function dbCheck(sender_psid, time_stamp) {
     let state = 0;
     let rows;
-    return client.query('SELECT status, starttime, count, heard_a_joke FROM records WHERE id=$1;', [sender_psid], (err, res) => {
+    client.query('SELECT status, starttime, count, heard_a_joke FROM records WHERE id=$1;', [sender_psid])
+    .then(res => {
         if (err) {
             throw err = new Error('Failed to SELECT from records');
         }
@@ -244,8 +245,8 @@ function dbCheck(sender_psid, time_stamp) {
             console.log('Query success, but returns 0 result, or it is not recognized.');
             state = 0;
         }
-    return state;
-    });
+        return state;
+    }).catch(err => console.log('Error selecting from db.', err));
 }
 
 // Add new user, start counting
