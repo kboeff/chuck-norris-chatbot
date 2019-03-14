@@ -228,7 +228,7 @@ async function dbCheck(sender_psid, time_stamp) {
             }
         } else if (count > 10) {
             state = -1;
-            let update = makeQuery('UPDATE records SET status = -1, count = 0, starttime = $2 WHERE id=$1;', [sender_psid, parseInt(time_stamp)/1000]);
+            let update = makeQuery('UPDATE records SET status = -1, count = 0, starttime = to_timestamp($2) WHERE id=$1;', [sender_psid, parseInt(time_stamp)/1000]);
                 console.log(update);
             
         } else if (heard_a_joke) {
