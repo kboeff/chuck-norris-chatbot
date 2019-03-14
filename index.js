@@ -198,7 +198,7 @@ function callSendAPI(sender_psid, response) {
 function dbCheck(sender_psid, time_stamp) {
     let state = 0;
     let rows;
-    client.query('SELECT status, starttime, count, heard_a_joke FROM records WHERE id=$1;', [sender_psid], (err, res) => {
+    let query = new Promise(client.query('SELECT status, starttime, count, heard_a_joke FROM records WHERE id=$1;', [sender_psid], (err, res) => {
         if (err) {
             throw err = new Error('Failed to SELECT from records');
         }
@@ -206,7 +206,7 @@ function dbCheck(sender_psid, time_stamp) {
         console.log(res, res.rows);
         rows = res.rows;  
         
-    }).then(() => {
+    })).then(() => {
     
     console.log('selected rows: ', rows);
     if (rows.length) {
@@ -247,6 +247,8 @@ function dbCheck(sender_psid, time_stamp) {
         state = 0;
     }
     }).then(() => state);
+    console.log(query);
+    return query;
 }
 
 // Add new user, start counting
