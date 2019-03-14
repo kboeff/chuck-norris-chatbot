@@ -197,7 +197,7 @@ function callSendAPI(sender_psid, response) {
 
 async function dbCheck(sender_psid, time_stamp) {
     let state = 0;
-    let rows = await client.query('SELECT status, starttime, count, heard_a_joke FROM records WHERE id=$1;', [sender_psid])
+    let rows = client.query('SELECT status, starttime, count, heard_a_joke FROM records WHERE id=$1;', [sender_psid])
         .then(res => res.rows)
         .catch(err => console.log('Cannot SELECT from records', err));
         
