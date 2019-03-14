@@ -205,6 +205,7 @@ function dbCheck(sender_psid, time_stamp) {
             throw err = new Error('Cannot connect to PostgreSQL.');
         }
         
+        state = 1;
         console.log('selected rows: ', res.rows);
         if (res.rows.length) {
             let { status, starttime, count, heard_a_joke } = res.rows[0];
@@ -235,9 +236,7 @@ function dbCheck(sender_psid, time_stamp) {
                 state = -1;
             } else if (heard_a_joke) {
                 state = 2;
-            } else {
-                state = 1;
-            }
+            } 
         } else {
             
             console.log('Query success, but returns 0 result, or it is not recognized.');
