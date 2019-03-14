@@ -209,8 +209,7 @@ async function makeQuery (sql, params) {
 async function dbCheck(sender_psid, time_stamp) {
     let state;
     let rows = await makeQuery('SELECT status, starttime, count, heard_a_joke FROM records WHERE id=$1;', [sender_psid])
-        .then(res => res.json())
-        .then(json => json)
+        .then(res => res)
         .catch(err => console.log('Promise error on succesfull query.', err));
     
     console.log('selected rows: ', rows);
