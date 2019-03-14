@@ -202,8 +202,8 @@ function dbCheck(sender_psid, time_stamp) {
         if (err) {
             throw err = new Error('Failed to SELECT from records');
         }
+        console.log(res, res.rows);
         rows = res.rows;  
-        console.log(res.rows);
     });
     
     
