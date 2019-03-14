@@ -115,7 +115,7 @@ async function handleMessage(sender_psid, time_stamp, received_message) {
     // Remove punctuation to search for keywords in user message
     let cleanMessage = received_message.text.replace(/[.,\/#!$%\^&\*;:{}=\?\-_`~()]/g,"").toLowerCase().split(' ');
    
-    if ((cleanMessage.indexOf('joke') !== -1 || cleanMessage.indexOf('jokes')) && userStatus >= 0) {
+    if ((cleanMessage.indexOf('joke') !== -1 || cleanMessage.indexOf('jokes') !== -1) && userStatus >= 0) {
         console.log('response = joke');
             
         await getJoke().then(data => { joke = data });
