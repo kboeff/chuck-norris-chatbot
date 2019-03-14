@@ -202,10 +202,11 @@ function dbCheck(sender_psid, time_stamp) {
         if (err) {
             throw err = new Error('Failed to SELECT from records');
         }
+        
         console.log(res, res.rows);
         rows = res.rows;  
-    });
-    
+        
+    }).then(() => {
     
     console.log('selected rows: ', rows);
     if (rows.length) {
@@ -245,8 +246,7 @@ function dbCheck(sender_psid, time_stamp) {
         console.log('Query success, but returns 0 result, or it is not recognized.');
         state = 0;
     }
- 
-    return state;
+    }).then(() => state);
 }
 
 // Add new user, start counting
