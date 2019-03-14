@@ -108,7 +108,7 @@ async function handleMessage(sender_psid, time_stamp, received_message) {
   // Checks if the message contains text
   if (received_message.text) {    
     
-    let userStatus = await dbCheck(sender_psid, time_stamp);
+    let userStatus = dbCheck(sender_psid, time_stamp);
     console.log('userStatus', userStatus);
     
     // Remove punctuation to search for keywords in user message
@@ -195,10 +195,10 @@ function callSendAPI(sender_psid, response) {
 //-----+-------+-----------+-------+--------------
 // TXT |  INT   |   TIME    | INT   |    BOOL
 
-function dbCheck(sender_psid, time_stamp) {
+async function dbCheck(sender_psid, time_stamp) {
     let state = 0;
     
-    client.query('SELECT status, starttime, count, heard_a_joke FROM records WHERE id=$1;', [sender_psid] , (err, res) => {
+    await client.query('SELECT status, starttime, count, heard_a_joke FROM records WHERE id=$1;', [sender_psid] , (err, res) => {
         if (err) {
             throw err = new Error('Cannot connect to PostgreSQL.');
         }
