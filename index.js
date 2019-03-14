@@ -122,21 +122,19 @@ async function handleMessage(sender_psid, time_stamp, received_message) {
             response = joke;
             
             // New user found, check wether he or she wants a joke    
-            /*
             if (userStatus === 0) {
                 addNewUser(sender_psid, time_stamp);
             } else {
                 updateUser(sender_psid);
             }
-            */
+
         }
-   } else if (cleanMessage.indexOf('more') !== -1) {
-       if (userStatus === 2) {
-          await getJoke().then(data => { joke = data });
-          response = joke;
+   } else if (cleanMessage.indexOf('more') !== -1 && userStatus === 2) {
+       await getJoke().then(data => { joke = data });
+       response = joke;
          
-          // updateUser(sender_psid); 
-       }
+       updateUser(sender_psid); 
+
    } else if (cleanMessage.indexOf('help') !== -1) {
        response = helpMessage;
    } else if (cleanMessage.indexOf('reset') !== -1) {
@@ -255,7 +253,7 @@ function addNewUser(sender_psid, time_stamp) {
         if (err) {
            throw err = new Error('Problem inserting to db.');
         }
-        console.log(JSON.stringify(res.rows));
+        console.log(res.rows);
     });
 }
 
@@ -264,9 +262,9 @@ function updateUser(sender_psid) {
 
     client.query('UPDATE records SET count = count + 1, heard_a_joke = TRUE WHERE id=$1;', [sender_psid] , (err, res) => {
         if (err) {
-            // throw err = new Error('Problem updating user info in db.');
+            throw err = new Error('Problem updating user info in db.');
         }
-        console.log(JSON.stringify(res.rows));
+        console.log(res.rows);
     });
 
 }
