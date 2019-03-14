@@ -202,10 +202,7 @@ async function dbCheck(sender_psid, time_stamp) {
             throw err = new Error('Cannot connect to PostgreSQL.');
         }
         return res.rows;
-    }).then(res => res.json())
-      .then(json => json)
-      .catch(err => console.log(err));
-        
+    });  
         
     console.log('selected rows: ', rows);
     if (rows.length) {
