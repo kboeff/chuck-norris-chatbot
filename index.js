@@ -8,9 +8,16 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const app = express().use(bodyParser.json()); // creates express server
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
-const database = require('./src/db');
+const { Client } = require('pg'); // connect to PostgreSQL
 
-let db = new database;
+// Connect to the database 
+const client = new Client({
+  connectionString: process.env.DATABASE_URL,
+  ssl: true,
+});
+
+client.connect();
+
 // Sets server port and logs message on success
 app.listen(process.env.PORT || 1337, () => console.log('webhook is listening'));
 
@@ -191,71 +198,88 @@ function callSendAPI(sender_psid, response) {
 function dbCheck(sender_psid, time_stamp) {
     let state = 0;
     let rows;
-    db.query('SELECT status, starttime, count, heard_a_joke FROM records WHERE id=$1;', [sender_psid]).then((res) => {
-        console.log(res, res.rows);
-        rows = res.rows;  
-    }).then(() => {
-    
-    console.log('selected rows: ', rows);
-    if (rows.length) {
-        let { status, starttime, count, heard_a_joke } = rows;
-        console.log("deconstructed rows: ", status, starttime, count, heard_a_joke);
-        let receivedDate = new Date(starttime * 1000);
-        let timePassed = new Date() - receivedDate;
-
-        // console.log(rows);
-        if (status === -1) {
-            if (timePassed < 24 * 60 * 60 * 1000) {
-                state = -2; // post count over 10, need to wait 24 hours
-            } else {
-                db.query('UPDATE records SET status = 0, count = 0 WHERE id=$1;', [sender_psid])
-                .then(res => {
-                    console.log(res.rows);
-                    state = 1;
-                })
-                .catch(err => console.log('Problem UPDATE-ing if timePassed > 24h.', err));
-            }
-        } else if (count > 10) {
-            db.query('UPDATE records SET status = -1, count = 0, starttime = $2 WHERE id=$1;', [sender_psid, parseInt(time_stamp)/1000])
-                .then(res => {
-                    console.log(res.rows);
-                    state = -1;
-                })
-                .catch(err => console.log('Problem UPDATE-ing if count > 10.', err));
-        } else if (heard_a_joke) {
-            state = 2;
-        } else {
-            state = 1;
+    client.query('SELECT status, starttime, count, heard_a_joke FROM records WHERE id=$1;', [sender_psid], (err, res) => {
+        if (err) {
+            throw err = new Error('Failed to SELECT from records');
         }
-    } else {
         
-        console.log('Query success, but returns 0 result, or it is not recognized.');
-        state = 0;
-    }
-    }).then(() => state)
-    .catch(err => console.log('Promise problem occured.', err));
-       
+        rows = res.rows;  
+    
+        console.log('selected rows: ', rows);
+        
+        if (rows.length) {
+            let { status, starttime, count, heard_a_joke } = rows;
+            console.log("deconstructed rows: ", status, starttime, count, heard_a_joke);
+            let receivedDate = new Date(starttime * 1000);
+            let timePassed = new Date() - receivedDate;
+    
+            // console.log(rows);
+            if (status === -1) {
+                if (timePassed < 24 * 60 * 60 * 1000) {
+                    state = -2; // post count over 10, need to wait 24 hours
+                } else {
+                    state = 1;
+                    client.query('UPDATE records SET status = 0, count = 0 WHERE id=$1;', [sender_psid] , (err, res) => {
+                        if (err) {
+                            throw err = new Error('Cannot UPDATE records');
+                        }
+                        console.log(res.rows);
+                    });
+                    
+                }
+            } else if (count > 10) {
+                state = -1;
+                client.query('UPDATE records SET status = -1, count = 0, starttime = $2 WHERE id=$1;', [sender_psid, parseInt(time_stamp)/1000] , (err, res) => {
+                    if (err) {
+                        throw err = new Error('Cannot UPDATE records..');
+                    }
+                    console.log(res.rows);
+                });
+            } else if (heard_a_joke) {
+                state = 2;
+            } else {
+                state = 1;
+            }
+        } else {
+            console.log('Query success, but returns 0 result, or it is not recognized.');
+            state = 0;
+        }
+    return state;
+    });
 }
 
 // Add new user, start counting
 function addNewUser(sender_psid, time_stamp) {
-    db.query('INSERT INTO records (id, status, starttime, count, heard_a_joke) VALUES ($1, 1, to_timestamp($2), 1, TRUE);', [sender_psid, parseInt(time_stamp)/1000])
-    .then(res => console.log(res.rows))
-    .catch(err => console.log('Problem INSERTing in db.', err));
-
+   
+    client.query('INSERT INTO records (id, status, starttime, count, heard_a_joke) VALUES ($1, 1, to_timestamp($2), 1, TRUE);', [sender_psid, parseInt(time_stamp)/1000] , (err, res) => {
+        if (err) {
+           throw err = new Error('Problem inserting to db.');
+        }
+        console.log(res.rows);
+    });
 }
 
 // Increment count from 1 to 10
 function updateUser(sender_psid) {
-    db.query('UPDATE records SET count = count + 1, heard_a_joke = TRUE WHERE id=$1;', [sender_psid])
-        .then(res => console.log(res.rows)).
-        catch(err => console.log("Problem UPDATEing the db.", err));
+
+    client.query('UPDATE records SET count = count + 1, heard_a_joke = TRUE WHERE id=$1;', [sender_psid] , (err, res) => {
+        if (err) {
+            throw err = new Error('Problem updating user info in db.');
+        }
+        console.log(res.rows);
+    });
+
 }
 
 
 // Reset counts and heard_a_joke
 function resetUser(sender_psid) {
-    db.query('UPDATE records SET status = 0, count = 0, heard_a_joke = FALSE WHERE id=$1;', [sender_psid])
-        .then(res => console.log(res.rows)).
-        catch(err => console.log("Problem UPDATEing/ Reseting the db.", err));
+
+    client.query('UPDATE records SET status = 0, count = 0, heard_a_joke = FALSE WHERE id=$1;', [sender_psid] , (err, res) => {
+        if (err) {
+            throw err = new Error('Problem reseting user in db.');
+        }
+        console.log(JSON.stringify(res.rows));
+    });
+
 }
