@@ -195,63 +195,52 @@ function callSendAPI(sender_psid, response) {
 //-----+-------+-----------+-------+--------------
 // TXT |  INT   |   TIME    | INT   |    BOOL
 
+async function makeQuery (sql, params) {
+    let rows;
+    await client.query(sql, params)
+        .then(res => rows = res.rows)
+        .catch(err => console.log('Query error'));
+    return rows;
+}
+
+
 function dbCheck(sender_psid, time_stamp) {
     let state;
-    let rows;
-    client.query('SELECT status, starttime, count, heard_a_joke FROM records WHERE id=$1;', [sender_psid])
-    .then(res => {
-        rows = res.rows;  
+    let rows = makeQuery('SELECT status, starttime, count, heard_a_joke FROM records WHERE id=$1;', [sender_psid]);
     
-        console.log('selected rows: ', rows);
-        
-        if (rows.length) {
-            let { status, starttime, count, heard_a_joke } = rows[0];
-            console.log("deconstructed rows: ", status, starttime, count, heard_a_joke);
-            let receivedDate = new Date(starttime * 1000);
-            let timePassed = new Date() - receivedDate;
+    console.log('selected rows: ', rows);
+       
+    if (rows.length) {
+        let { status, starttime, count, heard_a_joke } = rows[0];
+        console.log("deconstructed rows: ", status, starttime, count, heard_a_joke);
+        let receivedDate = new Date(starttime * 1000);
+        let timePassed = new Date() - receivedDate;
     
-            // console.log(rows);
-            if (status === -1) {
-                if (timePassed < 24 * 60 * 60 * 1000) {
-                    state = -2; // post count over 10, need to wait 24 hours
-                } else {
-                    state = 1;
-                    client.query('UPDATE records SET status = 0, count = 0 WHERE id=$1;', [sender_psid] , (err, res) => {
-                        if (err) {
-                            throw err = new Error('Cannot UPDATE records');
-                        }
-                        console.log(res.rows);
-                    });
-                    
-                }
-            } else if (count > 10) {
-                state = -1;
-                client.query('UPDATE records SET status = -1, count = 0, starttime = $2 WHERE id=$1;', [sender_psid, parseInt(time_stamp)/1000] , (err, res) => {
-                    if (err) {
-                        throw err = new Error('Cannot UPDATE records..');
-                    }
-                    console.log(res.rows);
-                });
-            } else if (heard_a_joke) {
-                state = 2;
+        // console.log(rows);
+        if (status === -1) {
+            if (timePassed < 24 * 60 * 60 * 1000) {
+                state = -2; // post count over 10, need to wait 24 hours
             } else {
                 state = 1;
+                let update = makeQuery('UPDATE records SET status = 0, count = 0 WHERE id=$1;', [sender_psid]);
+                console.log(update);
             }
+        } else if (count > 10) {
+            state = -1;
+            let update = makeQuery('UPDATE records SET status = -1, count = 0, starttime = $2 WHERE id=$1;', [sender_psid, parseInt(time_stamp)/1000]);
+                console.log(update);
+            
+        } else if (heard_a_joke) {
+            state = 2;
         } else {
-            console.log('Query success, but returns 0 result, or it is not recognized.');
-            state = 0;
+            state = 1;
         }
-        return state;
-    }).then(state => state)
-    .catch(err => console.log('Error selecting from db.', err));
-    
-    // Ugly -> this is only for test.
-    while (state === 'undefined') {
-        if(state !== 'undefined') {
-            break;
-        }
+    } else {
+        console.log('Query success, but returns 0 result, or it is not recognized.');
+        state = 0;
     }
     return state;
+
 }
 
 // Add new user, start counting
