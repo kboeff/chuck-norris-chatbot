@@ -199,7 +199,8 @@ async function makeQuery (sql, params) {
     let rows;
     await client.query(sql, params)
         .then(res => rows = res.rows)
-        .catch(err => console.log('Query error'));
+        .catch(err => console.log('Query error', err));
+    console.log('querying... returning rows = ', rows);
     return rows;
 }
 
