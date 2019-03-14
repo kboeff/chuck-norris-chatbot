@@ -108,7 +108,7 @@ async function handleMessage(sender_psid, time_stamp, received_message) {
   // Checks if the message contains text
   if (received_message.text) {    
     
-    let userStatus = dbCheck(sender_psid, time_stamp);
+    let userStatus = await dbCheck(sender_psid, time_stamp);
     console.log('userStatus', userStatus);
     
     // Remove punctuation to search for keywords in user message
