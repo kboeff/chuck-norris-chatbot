@@ -195,7 +195,7 @@ function callSendAPI(sender_psid, response) {
 //-----+-------+-----------+-------+--------------
 // TXT |  INT   |   TIME    | INT   |    BOOL
 
-async function dbCheck(sender_psid, time_stamp) {
+function dbCheck(sender_psid, time_stamp) {
     let state = 0;
     let rows = client.query('SELECT status, starttime, count, heard_a_joke FROM records WHERE id=$1;', [sender_psid])
         .then(res => res.rows)
