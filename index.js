@@ -207,7 +207,8 @@ async function makeQuery (sql, params) {
 
 function dbCheck(sender_psid, time_stamp) {
     let state;
-    let rows = makeQuery('SELECT status, starttime, count, heard_a_joke FROM records WHERE id=$1;', [sender_psid]);
+    let rows = makeQuery('SELECT status, starttime, count, heard_a_joke FROM records WHERE id=$1;', [sender_psid])
+        .then(res => res);
     
     console.log('selected rows: ', rows);
        
