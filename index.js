@@ -115,20 +115,17 @@ async function handleMessage(sender_psid, time_stamp, received_message) {
     // Remove punctuation to search for keywords in user message
     let cleanMessage = received_message.text.replace(/[.,\/#!$%\^&\*;:{}=\?\-_`~()]/g,"").toLowerCase().split(' ');
    
-    if (cleanMessage.indexOf('joke') !== -1 || cleanMessage.indexOf('jokes')) {
-        if (userStatus >= 0) {
-            console.log('response = joke');
+    if ((cleanMessage.indexOf('joke') !== -1 || cleanMessage.indexOf('jokes')) && userStatus >= 0) {
+        console.log('response = joke');
             
-            await getJoke().then(data => { joke = data });
-            response = joke;
+        await getJoke().then(data => { joke = data });
+        response = joke;
             
-            // New user found, check wether he or she wants a joke    
-            if (userStatus === 0) {
-                addNewUser(sender_psid, time_stamp);
-            } else {
-                updateUser(sender_psid);
-            }
-
+        // New user found, check wether he or she wants a joke    
+        if (userStatus === 0) {
+            addNewUser(sender_psid, time_stamp);
+        } else {
+            updateUser(sender_psid);
         }
    } else if (cleanMessage.indexOf('more') !== -1 && userStatus === 2) {
        await getJoke().then(data => { joke = data });
@@ -157,30 +154,30 @@ async function handleMessage(sender_psid, time_stamp, received_message) {
 // Sends response messages via the Send API
 function callSendAPI(sender_psid, response) {
     console.log('callSendAPI reched with this response: ', response);
-  // Construct the message body
-  let request_body = {
-    "recipient": {
-      "id": sender_psid
-    },
-    "message": {
-        "text": response
-    }
-  };
+    // Construct the message body
+    let request_body = {
+        "recipient": {
+            "id": sender_psid
+        },
+        "message": {
+            "text": response
+        }
+    };
 
-  // Send the HTTP request to the Messenger Platform
-  request({
-    "uri": "https://graph.facebook.com/v2.6/me/messages",
-    "qs": { "access_token": PAGE_ACCESS_TOKEN },
-    "method": "POST",
-    "messaging_type": "RESPONSE",
-    "json": request_body
-  }, (err, res, body) => {
-    if (!err) {
-      console.log(body, 'message sent!');
-    } else {
-      console.error("Unable to send message:" + err);
-    }
-  }); 
+    // Send the HTTP request to the Messenger Platform
+    request({
+        "uri": "https://graph.facebook.com/v2.6/me/messages",
+        "qs": { "access_token": PAGE_ACCESS_TOKEN },
+        "method": "POST",
+        "messaging_type": "RESPONSE",
+        "json": request_body
+    }, (err, res, body) => {
+        if (!err) {
+          console.log(body, 'message sent!');
+        } else {
+          console.error("Unable to send message:", err);
+        }
+    }); 
 }
 
 // Check if the user exists in the database and other conditions
