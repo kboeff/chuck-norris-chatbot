@@ -104,6 +104,7 @@ async function handleMessage(sender_psid, time_stamp, received_message) {
     let userStatus;
     let helpMessage = 'Help: ask for a "joke" and then you will want some "more".';
     let hint = 'Hint: type "help" to get instructions.';
+    let waitMsg = 'You received 10 Jokes, need to wait or type "reset".';
     
 
   // Checks if the message contains text
@@ -137,6 +138,8 @@ async function handleMessage(sender_psid, time_stamp, received_message) {
        response = helpMessage;
    } else if (cleanMessage.indexOf('reset') !== -1) {
        resetUser(sender_psid);
+   } else if (userStatus < 0) {
+       response = waitMsg;
    } else {
        response = hint;
    }
