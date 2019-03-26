@@ -1,6 +1,5 @@
 'use strict';
 
-// Facebook code below, setting up the webhook for Messenger
 // Imports dependencies and set up http server
 const request = require('request');
 const fetch = require('node-fetch');
@@ -21,6 +20,7 @@ client.connect();
 // Sets server port and logs message on success
 app.listen(process.env.PORT || 1337, () => console.log('webhook is listening'));
 
+// Facebook code below, setting up the webhook for Messenger
 // Creates the endpoint for our webhook 
 app.post('/webhook', (req, res) => {  
  
@@ -62,7 +62,7 @@ app.post('/webhook', (req, res) => {
       res.sendStatus(404);
     }
   
-  });
+});
 
 app.get('/webhook', (req, res) => {
     // Your verify token. Should be a random string.
@@ -89,13 +89,13 @@ app.get('/webhook', (req, res) => {
     }
 });
 
+// Request a joke from the API
 function getJoke () {
     return fetch('https://api.icndb.com/jokes/random/')
                 .then(res => res.json())
                 .then(json => json["value"]["joke"])
                 .catch(err => console.log(err));
 }
-
 
 // Handles messages events
 async function handleMessage(sender_psid, time_stamp, received_message) {
@@ -105,6 +105,7 @@ async function handleMessage(sender_psid, time_stamp, received_message) {
     let helpMessage = 'Help: ask for a "joke" and then you will want some "more".';
     let hint = 'Hint: type "help" to get instructions.';
     let waitMsg = 'You received 10 Jokes, need to wait or type "reset".';
+    let resetMsg = 'Your records are reset.';
     
 
   // Checks if the message contains text
@@ -138,6 +139,7 @@ async function handleMessage(sender_psid, time_stamp, received_message) {
        response = helpMessage;
    } else if (cleanMessage.indexOf('reset') !== -1) {
        resetUser(sender_psid);
+       response = resetMsg;
    } else if (userStatus < 0) {
        response = waitMsg;
    } else {
@@ -147,7 +149,7 @@ async function handleMessage(sender_psid, time_stamp, received_message) {
   } else if (received_message.attachments.length) {
     // Get the URL of the message attachment
     // let attachment_url = received_message.attachments[0].payload.url;
-    response = 'Nice picture, do you want to know what Chuck Norris has to say about it?';
+    response = 'Nice one.';
   }
 
     // Sends the response message
@@ -185,7 +187,6 @@ function callSendAPI(sender_psid, response) {
 
 // Check if the user exists in the database and other conditions
 // return values according to different scenarios:
-// -2 => post count over 10, check elapsed time
 // -1 => just reached 10 posts, have to wait 24 hours
 //  0 => user not found, needs to be added
 //  1 => waiting time over or reset found, show a joke
@@ -223,7 +224,7 @@ async function dbCheck(sender_psid, time_stamp) {
         // console.log(rows);
         if (status === -1) {
             if (timePassed < 24 * 60 * 60 * 1000) {
-                state = -2; // post count over 10, need to wait 24 hours
+                state = -1; // post count over 10, need to wait 24 hours
             } else {
                 state = 1;
                 let update = makeQuery('UPDATE records SET status = 0, count = 0 WHERE id=$1;', [sender_psid]);
@@ -232,8 +233,7 @@ async function dbCheck(sender_psid, time_stamp) {
         } else if (count > 10) {
             state = -1;
             let update = makeQuery('UPDATE records SET status = -1, count = 0, starttime = to_timestamp($2) WHERE id=$1;', [sender_psid, parseInt(time_stamp)/1000]);
-                console.log(update);
-            
+            console.log(update);
         } else if (heard_a_joke) {
             state = 2;
         } else {
