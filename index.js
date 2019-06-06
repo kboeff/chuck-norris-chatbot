@@ -93,7 +93,7 @@ app.get('/webhook', (req, res) => {
 function getJoke () {
     return fetch('https://api.icndb.com/jokes/random/')
                 .then(res => res.json())
-                .then(json => json["value"]["joke"].replace(/&quot;/g, '\\"'))
+                .then(json => json["value"]["joke"].replace(/&quot;/g, '\"'))
                 .catch(err => console.log(err));
 }
 
